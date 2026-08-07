@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สั่งข้าวมันไก่พรีเมียม</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap');
+
+  :root{
+    --bg: #FDFBF7;
+    --paper: #FFFFFF;
+    --ink: #2C3539;
+    --ink-soft: #7A8B99;
+    --gold: #C5A059;
+    --gold-light: #E8D3A5;
+    --gold-dark: #9B7B3E;
+    --danger: #E26D5C;
+    --success: #6E8B4A;
+    --line: #EAE5DB;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    font-family: 'Noto Sans Thai', sans-serif;
+    color: var(--ink);
+    padding: 32px 16px 64px;
+    font-weight: 400;
+  }
+
+  .wrap { max-width: 680px; margin: 0 auto; }
+
+  .brand-banner {
+    width: 100%; display: block; border-radius: 12px; margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    border: 1px solid var(--line);
+    object-fit: cover;
+  }
+
+  header { text-align: center; margin-bottom: 32px; }
+  header .eyebrow {
+    font-size: 12px; letter-spacing: 0.15em; color: var(--gold-dark);
+    text-transform: uppercase; font-weight: 600; margin-bottom: 8px;
+  }
+  header h1 {
+    font-family: 'Cinzel', serif; font-weight: 600;
+    font-size: 32px; margin: 0 0 8px; color: var(--ink);
+    letter-spacing: 1px;
+  }
+  header p { margin: 0; color: var(--ink-soft); font-size: 14px; font-weight: 400; }
+
+  .ticket {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 32px 24px;
+    position: relative;
+    margin-bottom: 32px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+  }
+
+  .field { margin-bottom: 20px; }
+  .field label {
+    display: block; font-size: 14px; font-weight: 600; color: var(--ink);
+    margin-bottom: 8px; letter-spacing: 0.5px;
+  }
+  .field .hint { font-weight: 400; color: var(--ink-soft); font-size: 12px; margin-left: 4px; }
+
+  input[type=text], select, textarea {
+    width: 100%; border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 16px; font-size: 15px; font-family: inherit; color: var(--ink);
+    background: #FAFAFA; outline: none; transition: all 0.3s ease;
+  }
+  input[type=text]:focus, select:focus, textarea:focus {
+    border-color: var(--gold);
+    background: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 16px;
+    font-size: 14px; cursor: pointer; user-select: none; background: #FAFAFA;
+    color: var(--ink-soft); transition: all 0.2s; font-weight: 500;
+  }
+  .chip:hover { border-color: var(--gold-light); color: var(--ink); }
+  .chip.active { 
+    background: var(--gold); 
+    border-color: var(--gold-dark); 
+    color: #FFFFFF; 
+    box-shadow: 0 4px 10px rgba(197, 160, 89, 0.3);
+  }
+
+  .toggle-row { display: flex; gap: 10px; background: #FAFAFA; padding: 4px; border-radius: 10px; border: 1px solid var(--line); }
+  .toggle-opt {
+    flex: 1; text-align: center; padding: 10px 8px; border-radius: 6px;
+    font-size: 14px; cursor: pointer; color: var(--ink-soft); transition: all 0.3s;
+    font-weight: 500;
+  }
+  .toggle-opt:hover { color: var(--ink); }
+  .toggle-opt.active { 
+    background: var(--gold); 
+    color: #FFFFFF; 
+    box-shadow: 0 4px 10px rgba(197, 160, 89, 0.3); 
+    border: 1px solid var(--gold-dark); 
+  }
+
+  .price-tag {
+    display: inline-flex; align-items: center; gap: 6px; background: rgba(197, 160, 89, 0.1);
+    color: var(--gold-dark); font-size: 14px; font-weight: 600; padding: 6px 16px; border-radius: 8px;
+    border: 1px solid rgba(197, 160, 89, 0.2); margin-top: 4px; letter-spacing: 0.5px;
+  }
+
+  .submit-btn {
+    width: 100%; background: linear-gradient(135deg, #D4AF37 0%, #B5952F 100%);
+    color: #FFFFFF; border: none; border-radius: 8px;
+    padding: 16px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer;
+    margin-top: 12px; transition: transform 0.2s, box-shadow 0.2s;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .submit-btn:hover { box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4); transform: translateY(-1px); }
+  .submit-btn:disabled { background: var(--line); color: var(--ink-soft); cursor: not-allowed; box-shadow: none; transform: none; }
+
+  .status-msg {
+    text-align: center; font-size: 14px; margin-top: 12px; color: var(--success); min-height: 20px; font-weight: 500;
+  }
+
+  .divider {
+    display: flex; align-items: center; gap: 16px; margin: 40px 0 24px; color: var(--gold-dark); font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--line), transparent); }
+
+  .group-section { margin-bottom: 32px; }
+  .group-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+  .group-head h2 { font-family: 'Cinzel', serif; font-weight: 600; font-size: 20px; margin: 0; color: var(--ink); }
+  .group-meta { display: flex; align-items: center; gap: 10px; }
+  
+  .count-badge, .sum-badge {
+    font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 6px; letter-spacing: 0.5px;
+  }
+  .count-badge { background: #FAFAFA; color: var(--ink); border: 1px solid var(--line); }
+  .sum-badge { background: rgba(197, 160, 89, 0.1); color: var(--gold-dark); border: 1px solid rgba(197, 160, 89, 0.3); }
+
+  .refresh-btn {
+    width: 100%; border: 1px solid var(--line); background: var(--paper); border-radius: 8px; padding: 12px;
+    font-size: 14px; color: var(--ink-soft); cursor: pointer; font-family: inherit; transition: all 0.3s;
+    letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600;
+  }
+  .refresh-btn:hover { border-color: var(--gold); color: var(--gold-dark); background: rgba(197, 160, 89, 0.05); }
+
+  .order-list { display: flex; flex-direction: column; gap: 12px; }
+  .order-card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; display: flex; justify-content: space-between; gap: 12px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .order-card:hover { border-color: var(--gold-light); box-shadow: 0 4px 12px rgba(197, 160, 89, 0.08); }
+  .order-main { flex: 1; min-width: 0; }
+  .order-name { font-weight: 600; font-size: 16px; margin: 0 0 4px; color: var(--ink); }
+  .order-detail { font-size: 13px; color: var(--ink-soft); margin: 0 0 6px; line-height: 1.5; }
+  .order-time { font-size: 12px; color: #B0BCC4; font-weight: 400; }
+  .del-btn {
+    border: none; background: transparent; color: #D1D9E0; cursor: pointer;
+    font-size: 20px; line-height: 1; padding: 4px; flex-shrink: 0; transition: color 0.2s;
+  }
+  .del-btn:hover { color: var(--danger); }
+
+  .empty-state {
+    text-align: center; padding: 32px 16px; color: var(--ink-soft); font-size: 14px;
+    border: 1px dashed var(--line); border-radius: 12px; font-weight: 400;
+    background: #FAFAFA;
+  }
+
+  .setup-warning {
+    background: #FFF5F5; border: 1px solid #FEB2B2; border-radius: 8px;
+    padding: 12px 16px; font-size: 13px; color: #C53030; margin-bottom: 24px; text-align: center;
+  }
+
+  /* Modal Popup Styles */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(44, 53, 57, 0.6); z-index: 1000;
+    display: none; justify-content: center; align-items: center;
+    opacity: 0; transition: opacity 0.3s ease;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.show { display: flex; opacity: 1; }
+  .modal-box {
+    background: var(--paper); padding: 28px 24px; border-radius: 16px;
+    width: 90%; max-width: 400px; box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+    transform: translateY(30px); transition: transform 0.3s ease;
+  }
+  .modal-overlay.show .modal-box { transform: translateY(0); }
+  .modal-title { 
+    margin: 0 0 16px; font-family: 'Cinzel', serif; font-size: 22px; 
+    color: var(--ink); border-bottom: 1px solid var(--line); padding-bottom: 16px; text-align: center;
+  }
+  .modal-detail-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px; }
+  .modal-detail-label { color: var(--ink-soft); flex-shrink: 0; }
+  .modal-detail-value { font-weight: 600; color: var(--ink); text-align: right; margin-left: 16px; word-break: break-word; }
+  .modal-actions { display: flex; gap: 12px; margin-top: 28px; }
+  
+  .btn-cancel { 
+    flex: 1; padding: 14px; border-radius: 8px; border: 1px solid var(--line); 
+    background: #FAFAFA; cursor: pointer; font-weight: 600; color: var(--ink-soft); transition: 0.2s;
+  }
+  .btn-confirm { 
+    flex: 1.5; padding: 14px; border-radius: 8px; border: none; 
+    background: var(--success); color: #FFF; cursor: pointer; font-weight: 600; 
+    box-shadow: 0 4px 12px rgba(110, 139, 74, 0.3); transition: 0.2s;
+  }
+  .btn-cancel:hover { background: #F0F0F0; color: var(--ink); }
+  .btn-confirm:hover { background: #5a753c; transform: translateY(-1px); }
+  .btn-confirm:disabled { background: var(--line); color: var(--ink-soft); cursor: not-allowed; box-shadow: none; transform: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <img class="brand-banner" src="logo.jpg" alt="ข้าวมันไก่พรีเมียม" onerror="this.style.display='none'">
+
+  <header>
+    <div class="eyebrow">Premium Edition</div>
+    <h1>ใบสั่งข้าวมันไก่</h1>
+    <p>กรุณากรอกรายละเอียดออเดอร์ของคุณด้านล่าง</p>
+  </header>
+
+  <div id="setup-warning" class="setup-warning" style="display:none;">
+    ระบบยังไม่พร้อมใช้งาน กรุณาตั้งค่า SCRIPT_URL
+  </div>
+
+  <div class="ticket">
+    <div class="field">
+      <label>ชื่อผู้สั่ง</label>
+      <input type="text" id="f-name" placeholder="ระบุชื่อของคุณ">
+    </div>
+
+    <div class="field">
+      <label>ส่วน</label>
+      <select id="f-group">
+        <option value="Office">Office (สำนักงาน)</option>
+        <option value="โรงงาน">Factory (โรงงาน)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>ประเภท</label>
+      <div class="toggle-row" id="f-type">
+        <div class="toggle-opt active" data-val="ธรรมดา">ธรรมดา</div>
+        <div class="toggle-opt" data-val="พิเศษทุกอย่าง">พิเศษทุกอย่าง</div>
+        <div class="toggle-opt" data-val="พิเศษตับ">พิเศษตับ</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>ตัวเลือกอื่นๆ <span class="hint">(เลือกได้หลายอย่าง)</span></label>
+      <div class="chips" id="f-extra">
+        <div class="chip" data-val="ข้าวน้อย">ข้าวน้อย</div>
+        <div class="chip" data-val="เพิ่มน้ำจิ้ม">เพิ่มน้ำจิ้ม</div>
+        <div class="chip" data-val="เนื้อล้วน">เนื้อล้วน</div>
+        <div class="chip" data-val="ไม่มีตับ">ไม่มีตับ</div>
+        <div class="chip" data-val="ไม่เอาเลือด">ไม่เอาเลือด</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>หมายเหตุเพิ่มเติม <span class="hint">(Optional)</span></label>
+      <textarea id="f-note" placeholder="ข้อความเพิ่มเติม..."></textarea>
+    </div>
+
+    <div class="field" style="margin-bottom:24px; text-align: center;">
+      <span class="price-tag" id="f-price-tag">ราคาสุทธิ 50 บาท</span>
+    </div>
+
+    <button class="submit-btn" id="f-submit">สรุปรายการสั่งอาหาร</button>
+    <div class="status-msg" id="f-status"></div>
+  </div>
+
+  <div class="divider">รายการออเดอร์วันนี้</div>
+
+  <div class="group-section">
+    <div class="group-head">
+      <h2>Office Orders</h2>
+      <div class="group-meta">
+        <span class="count-badge" id="office-count">0</span>
+        <span class="sum-badge" id="office-sum">฿0</span>
+      </div>
+    </div>
+    <div class="order-list" id="office-list">
+      <div class="empty-state">ยังไม่มีรายการสั่งซื้อจาก Office</div>
+    </div>
+  </div>
+
+  <div class="group-section">
+    <div class="group-head">
+      <h2>Factory Orders</h2>
+      <div class="group-meta">
+        <span class="count-badge" id="factory-count">0</span>
+        <span class="sum-badge" id="factory-sum">฿0</span>
+      </div>
+    </div>
+    <div class="order-list" id="factory-list">
+      <div class="empty-state">ยังไม่มีรายการสั่งซื้อจากโรงงาน</div>
+    </div>
+  </div>
+
+  <button class="refresh-btn" id="refresh-btn">รีเฟรชข้อมูลล่าสุด</button>
+
+</div>
+
+<!-- Modal ยืนยันออเดอร์ (ก่อนส่ง) -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <h3 class="modal-title">ยืนยันรายการสั่งอาหาร</h3>
+    
+    <div class="modal-detail-row">
+      <span class="modal-detail-label">ชื่อผู้สั่ง:</span>
+      <span class="modal-detail-value" id="md-name"></span>
+    </div>
+    <div class="modal-detail-row">
+      <span class="modal-detail-label">ส่วน:</span>
+      <span class="modal-detail-value" id="md-group"></span>
+    </div>
+    <div class="modal-detail-row">
+      <span class="modal-detail-label">รายการ:</span>
+      <span class="modal-detail-value" id="md-detail"></span>
+    </div>
+    <div class="modal-detail-row" style="margin-top: 16px; border-top: 1px dashed var(--line); padding-top: 16px;">
+      <span class="modal-detail-label" style="color: var(--ink); font-weight: 600;">ราคาสุทธิ:</span>
+      <span class="modal-detail-value" id="md-price" style="color: var(--success); font-size: 18px;"></span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="btn-cancel-modal">กลับไปแก้ไข</button>
+      <button class="btn-confirm" id="btn-confirm-modal">ยืนยันออเดอร์</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ขอบคุณ (หลังส่งสำเร็จ) -->
+<div class="modal-overlay" id="success-modal">
+  <div class="modal-box" style="text-align: center; padding: 32px 24px;">
+    <img src="ChatGPT Image 7 ส.ค. 2569 09_42_14.png" alt="ขอบคุณครับ" 
+         style="width: 100%; max-width: 220px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); object-fit: cover;"
+         onerror="this.style.display='none'">
+    <h3 style="font-family: 'Noto Sans Thai', sans-serif; color: var(--success); margin: 0 0 8px; font-size: 24px; font-weight: 600;">ขอบคุณครับ!</h3>
+    <p style="color: var(--ink-soft); margin: 0 0 24px; font-size: 15px;" id="success-msg">รับออเดอร์เรียบร้อยแล้ว</p>
+    <button class="btn-confirm" id="btn-close-success" style="width: 100%; background: var(--gold); box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);">กลับสู่หน้าหลัก</button>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDtjz8oMdSEnnt6gqQAk5UQk-F12PSIFnq-0SsQaD1x5zNbD53Uyof4qoipFcpA_H4yw/exec';
+
+let selectedExtras = new Set();
+let state = { type: 'ธรรมดา' };
+let pendingOrder = null; // เก็บข้อมูลออเดอร์ก่อนกดยืนยัน
+
+if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
+  document.getElementById('setup-warning').style.display = 'block';
+}
+
+function setupToggleRow(containerId, stateKey){
+  const container = document.getElementById(containerId);
+  container.querySelectorAll('.toggle-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      container.querySelectorAll('.toggle-opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      state[stateKey] = opt.dataset.val;
+      updatePriceTag();
+    });
+  });
+}
+setupToggleRow('f-type', 'type');
+
+document.querySelectorAll('#f-extra .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const val = chip.dataset.val;
+    if (selectedExtras.has(val)) { selectedExtras.delete(val); chip.classList.remove('active'); }
+    else { selectedExtras.add(val); chip.classList.add('active'); }
+  });
+});
+
+function currentPrice(){
+  return (state.type === 'พิเศษทุกอย่าง' || state.type === 'พิเศษตับ') ? 60 : 50;
+}
+
+function updatePriceTag(){
+  document.getElementById('f-price-tag').textContent = `ราคาสุทธิ ${currentPrice()} บาท`;
+}
+
+function buildDetail(){
+  const parts = [];
+  if (state.type !== 'ธรรมดา') parts.push(state.type);
+  selectedExtras.forEach(v => parts.push(v));
+  const note = document.getElementById('f-note').value.trim();
+  if (note) parts.push(`(${note})`);
+  return parts.join(' • ');
+}
+
+function formatTime(iso){
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString('th-TH', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+
+function renderList(listEl, countEl, sumEl, orders, emptyText){
+  countEl.textContent = orders.length + ' รายการ';
+  const sum = orders.reduce((acc, o) => acc + (parseFloat(o.price) || 0), 0);
+  sumEl.textContent = `฿${sum}`;
+  if (orders.length === 0) {
+    listEl.innerHTML = `<div class="empty-state">${emptyText}</div>`;
+    return;
+  }
+  listEl.innerHTML = orders.map(o => `
+    <div class="order-card">
+      <div class="order-main">
+        <p class="order-name">${escapeHtml(o.name)}</p>
+        <p class="order-detail">${escapeHtml(o.detail || 'ธรรมดา')} — ฿${escapeHtml(o.price)}</p>
+        <p class="order-time">${formatTime(o.createdAt)}</p>
+      </div>
+      <button class="del-btn" data-id="${escapeHtml(o.id)}" data-group="${escapeHtml(o.__group)}" title="ลบออเดอร์">&times;</button>
+    </div>`).join('');
+  listEl.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      try{
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'delete', id: btn.dataset.id, group: btn.dataset.group })
+        });
+        loadOrders();
+      }catch(e){}
+    });
+  });
+}
+
+async function loadOrders(){
+  if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') === 0) return;
+  try{
+    const res = await fetch(SCRIPT_URL, { method: 'GET' });
+    const data = await res.json();
+    const office = (data.office || []).map(o => ({ ...o, __group: 'Office' }));
+    const factory = (data.factory || []).map(o => ({ ...o, __group: 'โรงงาน' }));
+    renderList(
+      document.getElementById('office-list'),
+      document.getElementById('office-count'),
+      document.getElementById('office-sum'),
+      office, 'ยังไม่มีรายการสั่งซื้อจาก Office'
+    );
+    renderList(
+      document.getElementById('factory-list'),
+      document.getElementById('factory-count'),
+      document.getElementById('factory-sum'),
+      factory, 'ยังไม่มีรายการสั่งซื้อจากโรงงาน'
+    );
+  }catch(e){
+    document.getElementById('office-list').innerHTML = '<div class="empty-state" style="color:var(--danger)">ไม่สามารถโหลดข้อมูลได้</div>';
+  }
+}
+
+// ==== Modal Logic ====
+const confirmModal = document.getElementById('confirm-modal');
+const successModal = document.getElementById('success-modal');
+
+function openConfirmModal() {
+  confirmModal.style.display = 'flex';
+  setTimeout(() => confirmModal.classList.add('show'), 10);
+}
+
+function closeConfirmModal() {
+  confirmModal.classList.remove('show');
+  setTimeout(() => confirmModal.style.display = 'none', 300);
+}
+
+function openSuccessModal(name) {
+  document.getElementById('success-msg').textContent = `เราได้รับออเดอร์ของ ${name} เรียบร้อยแล้ว`;
+  successModal.style.display = 'flex';
+  setTimeout(() => successModal.classList.add('show'), 10);
+}
+
+function closeSuccessModal() {
+  successModal.classList.remove('show');
+  setTimeout(() => successModal.style.display = 'none', 300);
+}
+
+document.getElementById('btn-cancel-modal').addEventListener('click', closeConfirmModal);
+document.getElementById('btn-close-success').addEventListener('click', closeSuccessModal);
+
+// เมื่อกดปุ่ม "สรุปรายการสั่งอาหาร" (ปุ่มแรกในฟอร์ม)
+document.getElementById('f-submit').addEventListener('click', () => {
+  const nameEl = document.getElementById('f-name');
+  const statusEl = document.getElementById('f-status');
+  const name = nameEl.value.trim();
+  
+  if (!name) {
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = 'กรุณาระบุชื่อผู้สั่ง';
+    nameEl.focus();
+    return;
+  }
+  if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = 'กรุณาตั้งค่า SCRIPT_URL ก่อนใช้งาน';
+    return;
+  }
+
+  statusEl.textContent = ''; // Clear error msg
+  
+  // เตรียมข้อมูลออเดอร์
+  pendingOrder = {
+    name,
+    group: document.getElementById('f-group').value,
+    type: state.type,
+    extras: Array.from(selectedExtras),
+    note: document.getElementById('f-note').value.trim(),
+    detail: buildDetail() || 'ธรรมดา',
+    price: currentPrice()
+  };
+
+  // นำข้อมูลไปใส่ใน Modal ยืนยัน
+  document.getElementById('md-name').textContent = pendingOrder.name;
+  document.getElementById('md-group').textContent = pendingOrder.group === 'Office' ? 'Office (สำนักงาน)' : 'Factory (โรงงาน)';
+  document.getElementById('md-detail').textContent = pendingOrder.detail;
+  document.getElementById('md-price').textContent = `฿${pendingOrder.price}`;
+
+  openConfirmModal();
+});
+
+// เมื่อกดปุ่ม "ยืนยันออเดอร์" ใน Modal จะทำการส่งข้อมูลไป Google Script
+document.getElementById('btn-confirm-modal').addEventListener('click', async () => {
+  if (!pendingOrder) return;
+  
+  const confirmBtn = document.getElementById('btn-confirm-modal');
+  const cancelBtn = document.getElementById('btn-cancel-modal');
+  const statusEl = document.getElementById('f-status');
+  
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'กำลังส่ง...';
+  cancelBtn.style.pointerEvents = 'none'; // ห้ามกดยกเลิกระหว่างส่ง
+
+  try{
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(pendingOrder)
+    });
+    const result = await res.json();
+    
+    closeConfirmModal(); // ปิด popup ยืนยันเมื่อส่งเสร็จ
+
+    if (result && result.success) {
+      // เปิด Popup ขอบคุณ และโชว์รูปภาพ
+      setTimeout(() => {
+         openSuccessModal(pendingOrder.name);
+      }, 350); // รอให้จังหวะปิด popup แรกเสร็จก่อนนิดนึง
+      
+      // ล้างข้อมูลในฟอร์ม
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-note').value = '';
+      selectedExtras.clear();
+      document.querySelectorAll('#f-extra .chip').forEach(c => c.classList.remove('active'));
+      
+      // รีเซ็ตปุ่มประเภทเป็น ธรรมดา
+      document.querySelectorAll('#f-type .toggle-opt').forEach(o => o.classList.remove('active'));
+      const defaultType = document.querySelector('#f-type .toggle-opt[data-val="ธรรมดา"]');
+      if (defaultType) {
+          defaultType.classList.add('active');
+          state.type = 'ธรรมดา';
+      }
+
+      loadOrders();
+    } else {
+      statusEl.style.color = 'var(--danger)';
+      statusEl.textContent = 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง';
+    }
+  }catch(e){
+    closeConfirmModal();
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+  }finally{
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'ยืนยันออเดอร์';
+    cancelBtn.style.pointerEvents = 'auto';
+    updatePriceTag();
+  }
+});
+
+document.getElementById('refresh-btn').addEventListener('click', loadOrders);
+
+updatePriceTag();
+loadOrders();
+</script>
+</body>
+</html>
