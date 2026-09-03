@@ -216,6 +216,48 @@
   .btn-cancel:hover { background: #F0F0F0; color: var(--ink); }
   .btn-confirm:hover { background: #5a753c; transform: translateY(-1px); }
   .btn-confirm:disabled { background: var(--line); color: var(--ink-soft); cursor: not-allowed; box-shadow: none; transform: none; }
+
+  /* Quantity stepper */
+  .qty-row { display: flex; align-items: center; gap: 14px; }
+  .qty-btn {
+    width: 42px; height: 42px; border-radius: 8px; border: 1px solid var(--line);
+    background: #FAFAFA; font-size: 18px; font-weight: 600; cursor: pointer;
+    color: var(--ink); transition: all 0.2s; line-height: 1;
+  }
+  .qty-btn:hover { border-color: var(--gold); color: var(--gold-dark); background: rgba(197,160,89,0.08); }
+  .qty-btn:active { transform: scale(0.95); }
+  .qty-value { min-width: 36px; text-align: center; font-size: 18px; font-weight: 700; color: var(--ink); }
+
+  .add-cart-btn {
+    width: 100%; background: var(--paper); color: var(--gold-dark); border: 2px solid var(--gold);
+    border-radius: 8px; padding: 14px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer;
+    margin-top: 12px; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .add-cart-btn:hover { background: rgba(197,160,89,0.1); box-shadow: 0 4px 12px rgba(197,160,89,0.2); }
+
+  /* Cart */
+  .cart-item-card { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+  .cart-item-main { flex: 1; min-width: 0; }
+  .cart-item-name { font-weight: 600; font-size: 15px; margin: 0 0 4px; color: var(--ink); display:flex; align-items:center; gap:8px; flex-wrap: wrap; }
+  .cart-item-group-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 5px; background: rgba(197,160,89,0.12); color: var(--gold-dark); letter-spacing: 0.3px; }
+  .cart-item-detail { font-size: 13px; color: var(--ink-soft); margin: 0 0 6px; line-height: 1.5; }
+  .cart-item-price { font-size: 14px; font-weight: 700; color: var(--gold-dark); }
+
+  .cart-total-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 18px; background: rgba(197, 160, 89, 0.08); border: 1px solid rgba(197, 160, 89, 0.25);
+    border-radius: 10px; margin-top: 14px; font-weight: 700; font-size: 16px; color: var(--ink);
+  }
+  .cart-total-bar span:last-child { color: var(--gold-dark); font-size: 18px; }
+
+  .modal-item-list { max-height: 280px; overflow-y: auto; margin-bottom: 8px; }
+  .modal-item-row { display: flex; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+  .modal-item-row:last-child { border-bottom: none; }
+  .modal-item-info { min-width: 0; }
+  .modal-item-info .mi-name { font-weight: 600; font-size: 14px; color: var(--ink); margin: 0 0 2px; }
+  .modal-item-info .mi-detail { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+  .modal-item-info .mi-group { font-size: 11px; color: var(--gold-dark); font-weight: 600; }
+  .modal-item-price { font-weight: 600; color: var(--ink); white-space: nowrap; align-self: flex-start; }
 </style>
 </head>
 <body>
@@ -272,12 +314,38 @@
       <textarea id="f-note" placeholder="ข้อความเพิ่มเติม..."></textarea>
     </div>
 
+    <div class="field">
+      <label>จำนวน</label>
+      <div class="qty-row">
+        <button type="button" class="qty-btn" id="qty-minus">&minus;</button>
+        <span class="qty-value" id="qty-value">1</span>
+        <button type="button" class="qty-btn" id="qty-plus">+</button>
+      </div>
+    </div>
+
     <div class="field" style="margin-bottom:24px; text-align: center;">
       <span class="price-tag" id="f-price-tag">ราคาสุทธิ 50 บาท</span>
     </div>
 
-    <button class="submit-btn" id="f-submit">สรุปรายการสั่งอาหาร</button>
+    <button class="add-cart-btn" id="f-add-cart">🛒 เพิ่มลงตะกร้า</button>
     <div class="status-msg" id="f-status"></div>
+  </div>
+
+  <div class="group-section">
+    <div class="group-head">
+      <h2>🛒 ตะกร้าของคุณ</h2>
+      <div class="group-meta">
+        <span class="count-badge" id="cart-count">0 รายการ</span>
+      </div>
+    </div>
+    <div class="order-list" id="cart-list">
+      <div class="empty-state">ยังไม่มีรายการในตะกร้า เลือกเมนูแล้วกด "เพิ่มลงตะกร้า"</div>
+    </div>
+    <div class="cart-total-bar" id="cart-total-bar" style="display:none;">
+      <span>รวมทั้งหมด</span>
+      <span id="cart-total">฿0</span>
+    </div>
+    <button class="submit-btn" id="cart-checkout-btn" style="margin-top:16px; display:none;">ยืนยันออเดอร์ทั้งหมด</button>
   </div>
 
   <div class="divider">รายการออเดอร์วันนี้</div>
@@ -316,20 +384,10 @@
 <div class="modal-overlay" id="confirm-modal">
   <div class="modal-box">
     <h3 class="modal-title">ยืนยันรายการสั่งอาหาร</h3>
-    
-    <div class="modal-detail-row">
-      <span class="modal-detail-label">ชื่อผู้สั่ง:</span>
-      <span class="modal-detail-value" id="md-name"></span>
-    </div>
-    <div class="modal-detail-row">
-      <span class="modal-detail-label">ส่วน:</span>
-      <span class="modal-detail-value" id="md-group"></span>
-    </div>
-    <div class="modal-detail-row">
-      <span class="modal-detail-label">รายการ:</span>
-      <span class="modal-detail-value" id="md-detail"></span>
-    </div>
-    <div class="modal-detail-row" style="margin-top: 16px; border-top: 1px dashed var(--line); padding-top: 16px;">
+
+    <div class="modal-item-list" id="md-item-list"></div>
+
+    <div class="modal-detail-row" style="margin-top: 4px; border-top: 1px dashed var(--line); padding-top: 16px;">
       <span class="modal-detail-label" style="color: var(--ink); font-weight: 600;">ราคาสุทธิ:</span>
       <span class="modal-detail-value" id="md-price" style="color: var(--success); font-size: 18px;"></span>
     </div>
@@ -357,12 +415,21 @@
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDtjz8oMdSEnnt6gqQAk5UQk-F12PSIFnq-0SsQaD1x5zNbD53Uyof4qoipFcpA_H4yw/exec';
 
 let selectedExtras = new Set();
-let state = { type: 'ธรรมดา' };
-let pendingOrder = null; // เก็บข้อมูลออเดอร์ก่อนกดยืนยัน
+let state = { type: 'ธรรมดา', qty: 1 };
+let cart = []; // รายการที่ถูกเพิ่มลงตะกร้า รอกดยืนยันส่งทั้งหมด
+let cartUid = 0;
 
 if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
   document.getElementById('setup-warning').style.display = 'block';
 }
+
+function setQty(n){
+  state.qty = Math.max(1, Math.min(20, n));
+  document.getElementById('qty-value').textContent = state.qty;
+  updatePriceTag();
+}
+document.getElementById('qty-minus').addEventListener('click', () => setQty(state.qty - 1));
+document.getElementById('qty-plus').addEventListener('click', () => setQty(state.qty + 1));
 
 function setupToggleRow(containerId, stateKey){
   const container = document.getElementById(containerId);
@@ -390,7 +457,12 @@ function currentPrice(){
 }
 
 function updatePriceTag(){
-  document.getElementById('f-price-tag').textContent = `ราคาสุทธิ ${currentPrice()} บาท`;
+  const unit = currentPrice();
+  const qty = state.qty || 1;
+  const total = unit * qty;
+  document.getElementById('f-price-tag').textContent = qty > 1
+    ? `ราคาสุทธิ ${unit} x ${qty} = ${total} บาท`
+    : `ราคาสุทธิ ${total} บาท`;
 }
 
 function buildDetail(){
@@ -483,8 +555,8 @@ function closeConfirmModal() {
   setTimeout(() => confirmModal.style.display = 'none', 300);
 }
 
-function openSuccessModal(name) {
-  document.getElementById('success-msg').textContent = `เราได้รับออเดอร์ของ ${name} เรียบร้อยแล้ว`;
+function openSuccessModal(message) {
+  document.getElementById('success-msg').textContent = message;
   successModal.style.display = 'flex';
   setTimeout(() => successModal.classList.add('show'), 10);
 }
@@ -497,92 +569,190 @@ function closeSuccessModal() {
 document.getElementById('btn-cancel-modal').addEventListener('click', closeConfirmModal);
 document.getElementById('btn-close-success').addEventListener('click', closeSuccessModal);
 
-// เมื่อกดปุ่ม "สรุปรายการสั่งอาหาร" (ปุ่มแรกในฟอร์ม)
-document.getElementById('f-submit').addEventListener('click', () => {
+// ==== Cart Logic ====
+
+function resetFormAfterAdd(){
+  // ล้างเฉพาะรายละเอียดเมนู (คงชื่อ/ส่วนไว้ เผื่อสั่งต่อให้คนเดิม แก้ชื่อเองได้ถ้าจะสั่งให้คนอื่น)
+  document.getElementById('f-note').value = '';
+  selectedExtras.clear();
+  document.querySelectorAll('#f-extra .chip').forEach(c => c.classList.remove('active'));
+
+  document.querySelectorAll('#f-type .toggle-opt').forEach(o => o.classList.remove('active'));
+  const defaultType = document.querySelector('#f-type .toggle-opt[data-val="ธรรมดา"]');
+  if (defaultType) {
+    defaultType.classList.add('active');
+    state.type = 'ธรรมดา';
+  }
+
+  setQty(1);
+}
+
+function renderCart(){
+  const listEl = document.getElementById('cart-list');
+  const countEl = document.getElementById('cart-count');
+  const totalBar = document.getElementById('cart-total-bar');
+  const totalEl = document.getElementById('cart-total');
+  const checkoutBtn = document.getElementById('cart-checkout-btn');
+
+  countEl.textContent = cart.length + ' รายการ';
+
+  if (cart.length === 0) {
+    listEl.innerHTML = '<div class="empty-state">ยังไม่มีรายการในตะกร้า เลือกเมนูแล้วกด "เพิ่มลงตะกร้า"</div>';
+    totalBar.style.display = 'none';
+    checkoutBtn.style.display = 'none';
+    return;
+  }
+
+  const total = cart.reduce((acc, it) => acc + it.subtotal, 0);
+  totalEl.textContent = `฿${total}`;
+  totalBar.style.display = 'flex';
+  checkoutBtn.style.display = 'block';
+
+  listEl.innerHTML = cart.map(it => `
+    <div class="cart-item-card">
+      <div class="cart-item-main">
+        <p class="cart-item-name">${escapeHtml(it.name)} <span class="cart-item-group-tag">${it.group === 'Office' ? 'Office' : 'Factory'}</span></p>
+        <p class="cart-item-detail">${escapeHtml(it.detail)} ${it.qty > 1 ? `× ${it.qty}` : ''}</p>
+        <p class="cart-item-price">฿${it.subtotal}</p>
+      </div>
+      <button class="del-btn" data-uid="${it.uid}" title="ลบออกจากตะกร้า">&times;</button>
+    </div>`).join('');
+
+  listEl.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const uid = Number(btn.dataset.uid);
+      cart = cart.filter(it => it.uid !== uid);
+      renderCart();
+    });
+  });
+}
+
+// เมื่อกดปุ่ม "เพิ่มลงตะกร้า"
+document.getElementById('f-add-cart').addEventListener('click', () => {
   const nameEl = document.getElementById('f-name');
   const statusEl = document.getElementById('f-status');
   const name = nameEl.value.trim();
-  
+
   if (!name) {
     statusEl.style.color = 'var(--danger)';
     statusEl.textContent = 'กรุณาระบุชื่อผู้สั่ง';
     nameEl.focus();
     return;
   }
-  if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
-    statusEl.style.color = 'var(--danger)';
-    statusEl.textContent = 'กรุณาตั้งค่า SCRIPT_URL ก่อนใช้งาน';
-    return;
-  }
 
-  statusEl.textContent = ''; // Clear error msg
-  
-  // เตรียมข้อมูลออเดอร์
-  pendingOrder = {
+  statusEl.textContent = '';
+
+  const unitPrice = currentPrice();
+  const qty = state.qty || 1;
+  const baseDetail = buildDetail() || 'ธรรมดา';
+
+  cart.push({
+    uid: ++cartUid,
     name,
     group: document.getElementById('f-group').value,
     type: state.type,
     extras: Array.from(selectedExtras),
     note: document.getElementById('f-note').value.trim(),
-    detail: buildDetail() || 'ธรรมดา',
-    price: currentPrice()
-  };
+    detail: baseDetail,
+    qty,
+    unitPrice,
+    subtotal: unitPrice * qty
+  });
 
-  // นำข้อมูลไปใส่ใน Modal ยืนยัน
-  document.getElementById('md-name').textContent = pendingOrder.name;
-  document.getElementById('md-group').textContent = pendingOrder.group === 'Office' ? 'Office (สำนักงาน)' : 'Factory (โรงงาน)';
-  document.getElementById('md-detail').textContent = pendingOrder.detail;
-  document.getElementById('md-price').textContent = `฿${pendingOrder.price}`;
+  renderCart();
+  resetFormAfterAdd();
+
+  statusEl.style.color = 'var(--success)';
+  statusEl.textContent = `เพิ่ม "${name}" ลงตะกร้าแล้ว`;
+  setTimeout(() => { if (statusEl.textContent.indexOf('เพิ่ม') === 0) statusEl.textContent = ''; }, 2000);
+});
+
+// เมื่อกดปุ่ม "ยืนยันออเดอร์ทั้งหมด" — เปิด modal สรุปรายการทั้งหมดในตะกร้า
+document.getElementById('cart-checkout-btn').addEventListener('click', () => {
+  if (cart.length === 0) return;
+  if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
+    const statusEl = document.getElementById('f-status');
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = 'กรุณาตั้งค่า SCRIPT_URL ก่อนใช้งาน';
+    return;
+  }
+
+  const listEl = document.getElementById('md-item-list');
+  listEl.innerHTML = cart.map(it => `
+    <div class="modal-item-row">
+      <div class="modal-item-info">
+        <p class="mi-name">${escapeHtml(it.name)} <span class="mi-group">(${it.group === 'Office' ? 'Office' : 'Factory'})</span></p>
+        <p class="mi-detail">${escapeHtml(it.detail)}${it.qty > 1 ? ` × ${it.qty}` : ''}</p>
+      </div>
+      <div class="modal-item-price">฿${it.subtotal}</div>
+    </div>`).join('');
+
+  const total = cart.reduce((acc, it) => acc + it.subtotal, 0);
+  document.getElementById('md-price').textContent = `฿${total}`;
 
   openConfirmModal();
 });
 
-// เมื่อกดปุ่ม "ยืนยันออเดอร์" ใน Modal จะทำการส่งข้อมูลไป Google Script
+// เมื่อกดปุ่ม "ยืนยันออเดอร์" ใน Modal จะส่งทุกรายการในตะกร้าไป Google Script ทีเดียว
 document.getElementById('btn-confirm-modal').addEventListener('click', async () => {
-  if (!pendingOrder) return;
-  
+  if (cart.length === 0) return;
+
   const confirmBtn = document.getElementById('btn-confirm-modal');
   const cancelBtn = document.getElementById('btn-cancel-modal');
   const statusEl = document.getElementById('f-status');
-  
+
   confirmBtn.disabled = true;
   confirmBtn.textContent = 'กำลังส่ง...';
-  cancelBtn.style.pointerEvents = 'none'; // ห้ามกดยกเลิกระหว่างส่ง
+  cancelBtn.style.pointerEvents = 'none';
+
+  const itemsToSend = [...cart];
+  const failed = [];
 
   try{
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(pendingOrder)
-    });
-    const result = await res.json();
-    
-    closeConfirmModal(); // ปิด popup ยืนยันเมื่อส่งเสร็จ
-
-    if (result && result.success) {
-      // เปิด Popup ขอบคุณ และโชว์รูปภาพ
-      setTimeout(() => {
-         openSuccessModal(pendingOrder.name);
-      }, 350); // รอให้จังหวะปิด popup แรกเสร็จก่อนนิดนึง
-      
-      // ล้างข้อมูลในฟอร์ม
-      document.getElementById('f-name').value = '';
-      document.getElementById('f-note').value = '';
-      selectedExtras.clear();
-      document.querySelectorAll('#f-extra .chip').forEach(c => c.classList.remove('active'));
-      
-      // รีเซ็ตปุ่มประเภทเป็น ธรรมดา
-      document.querySelectorAll('#f-type .toggle-opt').forEach(o => o.classList.remove('active'));
-      const defaultType = document.querySelector('#f-type .toggle-opt[data-val="ธรรมดา"]');
-      if (defaultType) {
-          defaultType.classList.add('active');
-          state.type = 'ธรรมดา';
+    for (const it of itemsToSend){
+      const payload = {
+        name: it.name,
+        group: it.group,
+        type: it.type,
+        extras: it.extras,
+        note: it.note,
+        detail: it.qty > 1 ? `${it.detail} × ${it.qty}` : it.detail,
+        price: it.subtotal
+      };
+      try{
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (!result || !result.success) failed.push(it);
+      }catch(e){
+        failed.push(it);
       }
+    }
 
+    closeConfirmModal();
+
+    if (failed.length === 0) {
+      const names = [...new Set(itemsToSend.map(it => it.name))];
+      const summary = names.length === 1
+        ? `เราได้รับออเดอร์ของ ${names[0]} เรียบร้อยแล้ว (${itemsToSend.length} รายการ)`
+        : `เราได้รับออเดอร์เรียบร้อยแล้ว ${itemsToSend.length} รายการ (${names.join(', ')})`;
+
+      setTimeout(() => openSuccessModal(summary), 350);
+
+      cart = [];
+      renderCart();
+      document.getElementById('f-name').value = '';
+      resetFormAfterAdd();
       loadOrders();
     } else {
+      // เก็บเฉพาะรายการที่ส่งไม่สำเร็จไว้ในตะกร้า ให้ลองใหม่ได้
+      cart = failed;
+      renderCart();
       statusEl.style.color = 'var(--danger)';
-      statusEl.textContent = 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง';
+      statusEl.textContent = `ส่งไม่สำเร็จ ${failed.length} รายการ กรุณาลองกดยืนยันอีกครั้ง`;
     }
   }catch(e){
     closeConfirmModal();
@@ -592,13 +762,13 @@ document.getElementById('btn-confirm-modal').addEventListener('click', async () 
     confirmBtn.disabled = false;
     confirmBtn.textContent = 'ยืนยันออเดอร์';
     cancelBtn.style.pointerEvents = 'auto';
-    updatePriceTag();
   }
 });
 
 document.getElementById('refresh-btn').addEventListener('click', loadOrders);
 
 updatePriceTag();
+renderCart();
 loadOrders();
 </script>
 </body>
