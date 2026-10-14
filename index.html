@@ -4,9 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>สั่งข้าวมันไก่พรีเมียม</title>
+<script>
+const IMG_EXTS = ['.jpg', '.png', '.jpeg', '.webp'];
+function imgFallback(img){
+  const base = img.getAttribute('src').replace(/\.[a-z]+$/, '');
+  const n = Number(img.dataset.try) + 1;
+  if (n < IMG_EXTS.length) { img.dataset.try = n; img.src = base + IMG_EXTS[n]; }
+  else img.replaceWith(document.createTextNode(img.dataset.emoji));
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap');
-
   :root{
     --bg: #FDFBF7;
     --paper: #FFFFFF;
@@ -39,15 +49,28 @@
     object-fit: cover;
   }
 
-  header { text-align: center; margin-bottom: 32px; }
-  header .eyebrow {
-    font-size: 12px; letter-spacing: 0.15em; color: var(--gold-dark);
-    text-transform: uppercase; font-weight: 600; margin-bottom: 8px;
+  header {
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--line);
   }
+  header .logo {
+    position: relative; width: min(70vw, 320px); aspect-ratio: 1 / 1; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 72px;
+  }
+  /* mix-blend-mode: multiply ทำให้พื้นขาวของรูปกลืนไปกับพื้นหลังหน้าเว็บ */
+  header .logo img { position: absolute; inset: 8%; width: 84%; height: 84%; object-fit: contain; mix-blend-mode: multiply; }
+  /* ไฟวิ่งวนรอบโลโก้ — หลอดไฟ 2 สี สลับกัน วิ่งตามเข็มนาฬิกา */
+  header .logo svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; filter: drop-shadow(0 0 3px rgba(245,166,35,0.9)); }
+  .bulbs { fill: none; stroke-width: 3.4; stroke-linecap: round; stroke-dasharray: 0 19.744; }
+  .bulbs.a { stroke: #F5A623; animation: runA 1.4s linear infinite; }
+  .bulbs.b { stroke: #D62828; stroke-dashoffset: -9.872; animation: runB 1.4s linear infinite; }
+  @keyframes runA { to { stroke-dashoffset: -19.744; } }
+  @keyframes runB { to { stroke-dashoffset: -29.616; } }
+  @media (prefers-reduced-motion: reduce) { .bulbs { animation: none; } }
   header h1 {
     font-family: 'Cinzel', serif; font-weight: 600;
-    font-size: 32px; margin: 0 0 8px; color: var(--ink);
-    letter-spacing: 1px;
+    font-size: 20px; margin: 0; color: var(--ink);
+    text-align: right; line-height: 1.4; letter-spacing: 0.5px;
   }
   header p { margin: 0; color: var(--ink-soft); font-size: 14px; font-weight: 400; }
 
@@ -258,55 +281,125 @@
   .modal-item-info .mi-detail { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
   .modal-item-info .mi-group { font-size: 11px; color: var(--gold-dark); font-weight: 600; }
   .modal-item-price { font-weight: 600; color: var(--ink); white-space: nowrap; align-self: flex-start; }
+
+  .back-to-menu {
+    display: inline-flex; align-items: center; gap: 6px; color: var(--gold-dark);
+    font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 16px;
+    background: none; border: none; padding: 0; font-family: inherit;
+  }
+  .back-to-menu:hover { text-decoration: underline; }
+  .ticket-menu-title { font-family: 'Cinzel', serif; font-size: 22px; color: var(--ink); margin: 0 0 20px; text-align: center; }
+
+  .order-no-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; }
+  .order-no-badge {
+    background: linear-gradient(135deg, #D4AF37 0%, #B5952F 100%); color: #FFFFFF;
+    font-family: 'Cinzel', serif; font-weight: 700; font-size: 20px; letter-spacing: 1px;
+    padding: 10px 18px; border-radius: 10px; box-shadow: 0 4px 12px rgba(197,160,89,0.35);
+  }
+  .order-no-tag {
+    display: inline-block; font-size: 11px; font-weight: 700; color: var(--gold-dark);
+    background: rgba(197,160,89,0.12); border: 1px solid rgba(197,160,89,0.3);
+    border-radius: 6px; padding: 2px 8px; margin-right: 6px; letter-spacing: 0.3px;
+  }
+
+  /* Menu list — flat divided rows, photo left / text right (à la food-delivery apps) */
+  .menu-list { margin-bottom: 100px; }
+
+  .category-tabs {
+    position: sticky; top: 0; z-index: 400; background: var(--bg);
+    display: flex; gap: 26px; overflow-x: auto; padding: 4px 2px 12px;
+    margin: 0 -16px 8px; padding-left: 16px; padding-right: 16px;
+    border-bottom: 1px solid var(--line); -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .category-tabs::-webkit-scrollbar { display: none; }
+  .cat-tab {
+    flex-shrink: 0; font-size: 15px; font-weight: 600; color: var(--ink-soft);
+    padding-bottom: 10px; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .cat-tab.active { color: var(--gold-dark); border-bottom-color: var(--gold); }
+
+  .menu-section { scroll-margin-top: 56px; }
+  .menu-section-title {
+    font-family: 'Cinzel', serif; font-size: 19px; font-weight: 600; color: var(--ink);
+    margin: 28px 2px 6px;
+  }
+  .menu-section:first-of-type .menu-section-title { margin-top: 8px; }
+  .menu-row {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 18px 2px; border-bottom: 1px solid var(--line);
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .menu-row:first-child { padding-top: 4px; }
+  .menu-row:hover { opacity: 0.85; }
+  .menu-row-thumb {
+    width: 120px; height: 120px; border-radius: 12px; flex-shrink: 0; overflow: hidden;
+    background: linear-gradient(135deg, #2C3539 0%, #1a1f22 100%);
+    display: flex; align-items: center; justify-content: center; font-size: 48px;
+    position: relative;
+  }
+  .menu-row-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .menu-row-info { flex: 1; min-width: 0; padding-top: 2px; }
+  .menu-row-name { font-weight: 700; font-size: 17px; margin: 0 0 4px; color: var(--ink); }
+  .menu-row-sub { font-size: 13px; color: var(--ink-soft); margin: 0; line-height: 1.5; }
+  .menu-row-price { font-size: 13px; color: var(--gold-dark); font-weight: 600; margin-top: 4px; }
+  .menu-row.sold-out { cursor: not-allowed; opacity: 0.5; }
+  .menu-row.sold-out .menu-row-price { color: var(--danger); }
+  .menu-row.sold-out:hover { opacity: 0.5; }
+  .menu-row.selected .menu-row-name { color: var(--gold-dark); }
+
+  /* Floating cart bar — stays pinned to the bottom of the screen while browsing the menu */
+  .floating-cart-bar {
+    position: fixed; left: 16px; right: 16px; bottom: 16px; max-width: 500px; margin: 0 auto;
+    background: linear-gradient(135deg, #E53935 0%, #B71C1C 100%); color: #fff;
+    border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 8px 24px rgba(183,28,28,0.35); cursor: pointer; z-index: 500;
+    transform: translateY(120%); transition: transform 0.25s ease;
+  }
+  .floating-cart-bar.show { transform: translateY(0); }
+  .floating-cart-bar .fcb-left { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+  .floating-cart-bar .fcb-count {
+    background: rgba(255,255,255,0.25); border-radius: 999px; width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;
+  }
+  .floating-cart-bar .fcb-total { font-weight: 700; font-size: 16px; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <img class="brand-banner" src="logo.jpg" alt="ข้าวมันไก่พรีเมียม" onerror="this.style.display='none'">
-
   <header>
-    <div class="eyebrow">Premium Edition</div>
-    <h1>ใบสั่งข้าวมันไก่</h1>
-    <p>กรุณากรอกรายละเอียดออเดอร์ของคุณด้านล่าง</p>
+    <div class="logo"><svg viewBox="0 0 100 100" aria-hidden="true"><rect class="bulbs a" x="3" y="3" width="94" height="94" rx="12"/><rect class="bulbs b" x="3" y="3" width="94" height="94" rx="12"/></svg><img src="logo.png" alt="โลโก้ร้านข้าวมันไก่อมยิ้ม" data-try="1" data-emoji="😋" onerror="imgFallback(this)"></div>
   </header>
 
   <div id="setup-warning" class="setup-warning" style="display:none;">
     ระบบยังไม่พร้อมใช้งาน กรุณาตั้งค่า SCRIPT_URL
   </div>
 
-  <div class="ticket">
-    <div class="field">
-      <label>ชื่อผู้สั่ง</label>
-      <input type="text" id="f-name" placeholder="ระบุชื่อของคุณ">
-    </div>
+  <div class="category-tabs" id="category-tabs"></div>
 
-    <div class="field">
-      <label>ส่วน</label>
-      <select id="f-group">
-        <option value="Office">Office (สำนักงาน)</option>
-        <option value="โรงงาน">Factory (โรงงาน)</option>
-      </select>
+  <div class="menu-list" id="menu-list"></div>
+
+  <div class="floating-cart-bar" id="floating-cart-bar">
+    <div class="fcb-left">
+      <span>🛒</span>
+      <span id="fcb-text">0 รายการในตะกร้า</span>
     </div>
+    <span class="fcb-total" id="fcb-total">฿0</span>
+  </div>
+
+  <div class="ticket" id="ticket" style="display:none;">
+    <button type="button" class="back-to-menu" id="back-to-menu">‹ เปลี่ยนเมนู</button>
+    <h2 class="ticket-menu-title" id="ticket-menu-title"></h2>
 
     <div class="field">
       <label>ประเภท</label>
-      <div class="toggle-row" id="f-type">
-        <div class="toggle-opt active" data-val="ธรรมดา">ธรรมดา</div>
-        <div class="toggle-opt" data-val="พิเศษทุกอย่าง">พิเศษทุกอย่าง</div>
-        <div class="toggle-opt" data-val="พิเศษตับ">พิเศษตับ</div>
-      </div>
+      <div class="toggle-row" id="f-type"></div>
     </div>
 
-    <div class="field">
+    <div class="field" id="f-extra-field">
       <label>ตัวเลือกอื่นๆ <span class="hint">(เลือกได้หลายอย่าง)</span></label>
-      <div class="chips" id="f-extra">
-        <div class="chip" data-val="ข้าวน้อย">ข้าวน้อย</div>
-        <div class="chip" data-val="เพิ่มน้ำจิ้ม">เพิ่มน้ำจิ้ม</div>
-        <div class="chip" data-val="เนื้อล้วน">เนื้อล้วน</div>
-        <div class="chip" data-val="ไม่มีตับ">ไม่มีตับ</div>
-        <div class="chip" data-val="ไม่เอาเลือด">ไม่เอาเลือด</div>
-      </div>
+      <div class="chips" id="f-extra"></div>
     </div>
 
     <div class="field">
@@ -385,6 +478,19 @@
   <div class="modal-box">
     <h3 class="modal-title">ยืนยันรายการสั่งอาหาร</h3>
 
+    <div class="field" style="margin-bottom:14px;">
+      <label style="font-size:13px;">ชื่อผู้สั่ง</label>
+      <input type="text" id="md-f-name" placeholder="ระบุชื่อของคุณ">
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+      <label style="font-size:13px;">ส่วน</label>
+      <select id="md-f-group">
+        <option value="Office">Office (สำนักงาน)</option>
+        <option value="โรงงาน">Factory (โรงงาน)</option>
+      </select>
+    </div>
+    <div class="status-msg" id="md-status" style="margin-top:-8px; margin-bottom:8px; min-height:auto;"></div>
+
     <div class="modal-item-list" id="md-item-list"></div>
 
     <div class="modal-detail-row" style="margin-top: 4px; border-top: 1px dashed var(--line); padding-top: 16px;">
@@ -402,26 +508,186 @@
 <!-- Modal ขอบคุณ (หลังส่งสำเร็จ) -->
 <div class="modal-overlay" id="success-modal">
   <div class="modal-box" style="text-align: center; padding: 32px 24px;">
-    <img src="ChatGPT Image 7 ส.ค. 2569 09_42_14.png" alt="ขอบคุณครับ" 
+    <img src="Thank.png" data-try="1" data-emoji="" alt="ขอบคุณครับ" 
          style="width: 100%; max-width: 220px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); object-fit: cover;"
-         onerror="this.style.display='none'">
+         onerror="imgFallback(this)">
     <h3 style="font-family: 'Noto Sans Thai', sans-serif; color: var(--success); margin: 0 0 8px; font-size: 24px; font-weight: 600;">ขอบคุณครับ!</h3>
-    <p style="color: var(--ink-soft); margin: 0 0 24px; font-size: 15px;" id="success-msg">รับออเดอร์เรียบร้อยแล้ว</p>
+    <p style="color: var(--ink-soft); margin: 0 0 16px; font-size: 15px;" id="success-msg">รับออเดอร์เรียบร้อยแล้ว</p>
+    <div class="order-no-badges" id="order-no-badges"></div>
     <button class="btn-confirm" id="btn-close-success" style="width: 100%; background: var(--gold); box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);">กลับสู่หน้าหลัก</button>
   </div>
 </div>
 
+<script src="menu-data.js"></script>
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDtjz8oMdSEnnt6gqQAk5UQk-F12PSIFnq-0SsQaD1x5zNbD53Uyof4qoipFcpA_H4yw/exec';
 
+
+let currentMenu = null;
 let selectedExtras = new Set();
-let state = { type: 'ธรรมดา', qty: 1 };
+let state = { type: '', qty: 1 };
 let cart = []; // รายการที่ถูกเพิ่มลงตะกร้า รอกดยืนยันส่งทั้งหมด
 let cartUid = 0;
+let lastOrderer = { name: '', group: 'Office' }; // จำชื่อ/ส่วนล่าสุดไว้ ให้กรอกครั้งเดียวตอนยืนยัน
+let localOrderNoFallback = 1; // ใช้ชั่วคราวสำหรับพรีวิวเท่านั้น — ของจริงเลขออเดอร์ต้องมาจาก backend (กันเลขชนกันเวลามีคนสั่งพร้อมกัน)
 
 if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
   document.getElementById('setup-warning').style.display = 'block';
 }
+
+function slugify(str){
+  return 'cat-' + str.replace(/[^a-zA-Z0-9ก-๙]+/g, '-');
+}
+
+function thumbHtml(m){
+  if (!m.image) return m.emoji;
+  return `<img src="${m.image}.jpg" loading="lazy" decoding="async" alt="${escapeHtml(m.name)}" data-try="0" data-emoji="${m.emoji}" onerror="imgFallback(this)">`;
+}
+function renderMenuList(){
+  const tabsEl = document.getElementById('category-tabs');
+  const listEl = document.getElementById('menu-list');
+
+  // จัดกลุ่มเมนูตาม category ตามลำดับที่ปรากฏครั้งแรกใน MENU_DATA
+  const categories = [];
+  MENU_DATA.forEach(m => { if (!categories.includes(m.category)) categories.push(m.category); });
+
+  tabsEl.innerHTML = categories.map((cat, i) =>
+    `<div class="cat-tab ${i === 0 ? 'active' : ''}" data-target="${slugify(cat)}">${escapeHtml(cat)}</div>`
+  ).join('');
+
+  listEl.innerHTML = categories.map(cat => {
+    const items = MENU_DATA.filter(m => m.category === cat);
+    const rows = items.map(m => {
+      const minPrice = Math.min(...m.types.map(t => t.price));
+      const subText = m.available ? 'แตะเพื่อเลือก' : 'ปิดรับออเดอร์ชั่วคราว';
+      const priceText = m.available ? `${m.types.length > 1 ? 'เริ่มต้น ' : ''}${minPrice} บาท` : 'หมดวันนี้';
+      return `
+      <div class="menu-row ${m.available ? '' : 'sold-out'}" data-id="${m.id}">
+        <div class="menu-row-thumb">
+          ${thumbHtml(m)}
+        </div>
+        <div class="menu-row-info">
+          <p class="menu-row-name">${escapeHtml(m.name)}</p>
+          <p class="menu-row-sub">${subText}</p>
+          <p class="menu-row-price">${priceText}</p>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="menu-section" id="${slugify(cat)}"><h2 class="menu-section-title">${escapeHtml(cat)}</h2>${rows}</div>`;
+  }).join('');
+
+  listEl.querySelectorAll('.menu-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const menu = MENU_DATA.find(m => m.id === row.dataset.id);
+      if (!menu || !menu.available) return;
+      selectMenu(menu);
+    });
+  });
+
+  tabsEl.querySelectorAll('.cat-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.getElementById(tab.dataset.target).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  setupCategoryScrollSpy();
+}
+
+function setupCategoryScrollSpy(){
+  const sections = document.querySelectorAll('.menu-section');
+  if (!('IntersectionObserver' in window) || sections.length === 0) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const tab = document.querySelector(`.cat-tab[data-target="${entry.target.id}"]`);
+      if (!tab) return;
+      document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    });
+  }, { rootMargin: '-72px 0px -70% 0px', threshold: 0 });
+
+  sections.forEach(sec => observer.observe(sec));
+}
+
+function selectMenu(menu){
+  currentMenu = menu;
+  selectedExtras = new Set();
+  state.qty = 1;
+  document.getElementById('qty-value').textContent = '1';
+
+  document.getElementById('ticket-menu-title').textContent = menu.name;
+
+  // สร้างปุ่มประเภท (types) ตามเมนูที่เลือก
+  const typeRow = document.getElementById('f-type');
+  typeRow.innerHTML = menu.types.map((t, i) =>
+    `<div class="toggle-opt ${i === 0 ? 'active' : ''}" data-val="${escapeHtml(t.name)}">${escapeHtml(t.name)}</div>`
+  ).join('');
+  state.type = menu.types[0].name;
+  setupToggleRow('f-type', 'type');
+  typeRow.closest('.field').style.display = menu.types.length > 1 ? 'block' : 'none';
+
+  // สร้างของเสริม (extras) ตามเมนูที่เลือก
+  const extraField = document.getElementById('f-extra-field');
+  const extraWrap = document.getElementById('f-extra');
+  if (menu.extras && menu.extras.length > 0) {
+    extraField.style.display = 'block';
+    extraWrap.innerHTML = menu.extras.map(v => `<div class="chip" data-val="${escapeHtml(v)}">${escapeHtml(v)}</div>`).join('');
+    extraWrap.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const val = chip.dataset.val;
+        if (selectedExtras.has(val)) { selectedExtras.delete(val); chip.classList.remove('active'); }
+        else { selectedExtras.add(val); chip.classList.add('active'); }
+      });
+    });
+  } else {
+    extraField.style.display = 'none';
+  }
+
+  document.getElementById('f-note').value = '';
+  updatePriceTag();
+
+  document.querySelectorAll('#menu-list .menu-row').forEach(c => c.classList.toggle('selected', c.dataset.id === menu.id));
+  document.getElementById('ticket').style.display = 'block';
+  document.getElementById('ticket').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.getElementById('back-to-menu').addEventListener('click', () => {
+  document.getElementById('ticket').style.display = 'none';
+  document.querySelectorAll('#menu-list .menu-row').forEach(c => c.classList.remove('selected'));
+  window.scrollTo({ top: document.getElementById('menu-list').offsetTop - 20, behavior: 'smooth' });
+});
+
+renderMenuList();
+
+// สถานะ เปิด/ปิด เมนู — ตั้งจากหน้าหลังบ้าน (admin.html) เก็บไว้ที่ Apps Script
+let closedKey = '';
+async function loadMenuStatus(){
+  if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') === 0) return;
+  try{
+    const res = await fetch(SCRIPT_URL + '?action=menu');
+    const data = await res.json();
+    if (!Array.isArray(data.closed)) return;
+    const key = data.closed.slice().sort().join(',');
+    if (key === closedKey) return;
+    closedKey = key;
+    MENU_DATA.forEach(m => { m.available = !data.closed.includes(m.id); });
+    renderMenuList();
+    if (currentMenu && !currentMenu.available) {
+      document.getElementById('ticket').style.display = 'none';
+      currentMenu = null;
+    } else if (currentMenu) {
+      document.querySelectorAll('#menu-list .menu-row').forEach(c => c.classList.toggle('selected', c.dataset.id === currentMenu.id));
+    }
+  }catch(e){}
+}
+loadMenuStatus();
+setInterval(loadMenuStatus, 60000);
+
+document.getElementById('floating-cart-bar').addEventListener('click', () => {
+  document.getElementById('cart-list').scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
 
 function setQty(n){
   state.qty = Math.max(1, Math.min(20, n));
@@ -442,18 +708,11 @@ function setupToggleRow(containerId, stateKey){
     });
   });
 }
-setupToggleRow('f-type', 'type');
-
-document.querySelectorAll('#f-extra .chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    const val = chip.dataset.val;
-    if (selectedExtras.has(val)) { selectedExtras.delete(val); chip.classList.remove('active'); }
-    else { selectedExtras.add(val); chip.classList.add('active'); }
-  });
-});
 
 function currentPrice(){
-  return (state.type === 'พิเศษทุกอย่าง' || state.type === 'พิเศษตับ') ? 60 : 50;
+  if (!currentMenu) return 0;
+  const t = currentMenu.types.find(t => t.name === state.type);
+  return t ? t.price : currentMenu.types[0].price;
 }
 
 function updatePriceTag(){
@@ -467,7 +726,7 @@ function updatePriceTag(){
 
 function buildDetail(){
   const parts = [];
-  if (state.type !== 'ธรรมดา') parts.push(state.type);
+  if (currentMenu && state.type !== currentMenu.types[0].name) parts.push(state.type);
   selectedExtras.forEach(v => parts.push(v));
   const note = document.getElementById('f-note').value.trim();
   if (note) parts.push(`(${note})`);
@@ -497,7 +756,7 @@ function renderList(listEl, countEl, sumEl, orders, emptyText){
   listEl.innerHTML = orders.map(o => `
     <div class="order-card">
       <div class="order-main">
-        <p class="order-name">${escapeHtml(o.name)}</p>
+        <p class="order-name">${o.orderNo != null ? `<span class="order-no-tag">#${String(o.orderNo).padStart(3,'0')}</span>` : ''}${escapeHtml(o.name)}</p>
         <p class="order-detail">${escapeHtml(o.detail || 'ธรรมดา')} — ฿${escapeHtml(o.price)}</p>
         <p class="order-time">${formatTime(o.createdAt)}</p>
       </div>
@@ -577,11 +836,14 @@ function resetFormAfterAdd(){
   selectedExtras.clear();
   document.querySelectorAll('#f-extra .chip').forEach(c => c.classList.remove('active'));
 
-  document.querySelectorAll('#f-type .toggle-opt').forEach(o => o.classList.remove('active'));
-  const defaultType = document.querySelector('#f-type .toggle-opt[data-val="ธรรมดา"]');
-  if (defaultType) {
-    defaultType.classList.add('active');
-    state.type = 'ธรรมดา';
+  if (currentMenu) {
+    document.querySelectorAll('#f-type .toggle-opt').forEach(o => o.classList.remove('active'));
+    const defaultType = currentMenu.types[0].name;
+    const defaultOpt = document.querySelector(`#f-type .toggle-opt[data-val="${CSS.escape(defaultType)}"]`);
+    if (defaultOpt) {
+      defaultOpt.classList.add('active');
+      state.type = defaultType;
+    }
   }
 
   setQty(1);
@@ -593,6 +855,9 @@ function renderCart(){
   const totalBar = document.getElementById('cart-total-bar');
   const totalEl = document.getElementById('cart-total');
   const checkoutBtn = document.getElementById('cart-checkout-btn');
+  const fcb = document.getElementById('floating-cart-bar');
+  const fcbText = document.getElementById('fcb-text');
+  const fcbTotal = document.getElementById('fcb-total');
 
   countEl.textContent = cart.length + ' รายการ';
 
@@ -600,6 +865,7 @@ function renderCart(){
     listEl.innerHTML = '<div class="empty-state">ยังไม่มีรายการในตะกร้า เลือกเมนูแล้วกด "เพิ่มลงตะกร้า"</div>';
     totalBar.style.display = 'none';
     checkoutBtn.style.display = 'none';
+    fcb.classList.remove('show');
     return;
   }
 
@@ -608,10 +874,14 @@ function renderCart(){
   totalBar.style.display = 'flex';
   checkoutBtn.style.display = 'block';
 
+  fcbText.textContent = `${cart.length} รายการในตะกร้า`;
+  fcbTotal.textContent = `฿${total}`;
+  fcb.classList.add('show');
+
   listEl.innerHTML = cart.map(it => `
     <div class="cart-item-card">
       <div class="cart-item-main">
-        <p class="cart-item-name">${escapeHtml(it.name)} <span class="cart-item-group-tag">${it.group === 'Office' ? 'Office' : 'Factory'}</span></p>
+        <p class="cart-item-name">${escapeHtml(it.menuName)}</p>
         <p class="cart-item-detail">${escapeHtml(it.detail)} ${it.qty > 1 ? `× ${it.qty}` : ''}</p>
         <p class="cart-item-price">฿${it.subtotal}</p>
       </div>
@@ -629,27 +899,16 @@ function renderCart(){
 
 // เมื่อกดปุ่ม "เพิ่มลงตะกร้า"
 document.getElementById('f-add-cart').addEventListener('click', () => {
-  const nameEl = document.getElementById('f-name');
+  if (!currentMenu) return;
+
   const statusEl = document.getElementById('f-status');
-  const name = nameEl.value.trim();
-
-  if (!name) {
-    statusEl.style.color = 'var(--danger)';
-    statusEl.textContent = 'กรุณาระบุชื่อผู้สั่ง';
-    nameEl.focus();
-    return;
-  }
-
-  statusEl.textContent = '';
-
   const unitPrice = currentPrice();
   const qty = state.qty || 1;
-  const baseDetail = buildDetail() || 'ธรรมดา';
+  const baseDetail = buildDetail() || currentMenu.types[0].name;
 
   cart.push({
     uid: ++cartUid,
-    name,
-    group: document.getElementById('f-group').value,
+    menuName: currentMenu.name,
     type: state.type,
     extras: Array.from(selectedExtras),
     note: document.getElementById('f-note').value.trim(),
@@ -663,13 +922,21 @@ document.getElementById('f-add-cart').addEventListener('click', () => {
   resetFormAfterAdd();
 
   statusEl.style.color = 'var(--success)';
-  statusEl.textContent = `เพิ่ม "${name}" ลงตะกร้าแล้ว`;
+  statusEl.textContent = `เพิ่ม "${currentMenu.name}" ลงตะกร้าแล้ว`;
   setTimeout(() => { if (statusEl.textContent.indexOf('เพิ่ม') === 0) statusEl.textContent = ''; }, 2000);
 });
 
 // เมื่อกดปุ่ม "ยืนยันออเดอร์ทั้งหมด" — เปิด modal สรุปรายการทั้งหมดในตะกร้า
-document.getElementById('cart-checkout-btn').addEventListener('click', () => {
+document.getElementById('cart-checkout-btn').addEventListener('click', async () => {
   if (cart.length === 0) return;
+  loadMenuStatus(); // ไม่รอ เพื่อไม่ให้หน่วง ใช้สถานะล่าสุดที่โหลดไว้ตรวจก่อน
+  const closedItems = cart.filter(it => { const m = MENU_DATA.find(x => x.name === it.menuName); return m && !m.available; });
+  if (closedItems.length) {
+    cart = cart.filter(it => !closedItems.includes(it));
+    renderCart();
+    alert('ขออภัย เมนูต่อไปนี้ปิดรับออเดอร์แล้ว จึงนำออกจากตะกร้า:\n' + [...new Set(closedItems.map(i => i.menuName))].join(', '));
+    return;
+  }
   if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
     const statusEl = document.getElementById('f-status');
     statusEl.style.color = 'var(--danger)';
@@ -677,11 +944,15 @@ document.getElementById('cart-checkout-btn').addEventListener('click', () => {
     return;
   }
 
+  document.getElementById('md-f-name').value = lastOrderer.name;
+  document.getElementById('md-f-group').value = lastOrderer.group;
+  document.getElementById('md-status').textContent = '';
+
   const listEl = document.getElementById('md-item-list');
   listEl.innerHTML = cart.map(it => `
     <div class="modal-item-row">
       <div class="modal-item-info">
-        <p class="mi-name">${escapeHtml(it.name)} <span class="mi-group">(${it.group === 'Office' ? 'Office' : 'Factory'})</span></p>
+        <p class="mi-name">${escapeHtml(it.menuName)}</p>
         <p class="mi-detail">${escapeHtml(it.detail)}${it.qty > 1 ? ` × ${it.qty}` : ''}</p>
       </div>
       <div class="modal-item-price">฿${it.subtotal}</div>
@@ -699,7 +970,19 @@ document.getElementById('btn-confirm-modal').addEventListener('click', async () 
 
   const confirmBtn = document.getElementById('btn-confirm-modal');
   const cancelBtn = document.getElementById('btn-cancel-modal');
-  const statusEl = document.getElementById('f-status');
+  const mdStatusEl = document.getElementById('md-status');
+  const nameEl = document.getElementById('md-f-name');
+  const groupEl = document.getElementById('md-f-group');
+
+  const name = nameEl.value.trim();
+  if (!name) {
+    mdStatusEl.style.color = 'var(--danger)';
+    mdStatusEl.textContent = 'กรุณาระบุชื่อผู้สั่งก่อนยืนยัน';
+    nameEl.focus();
+    return;
+  }
+  const group = groupEl.value;
+  mdStatusEl.textContent = '';
 
   confirmBtn.disabled = true;
   confirmBtn.textContent = 'กำลังส่ง...';
@@ -707,16 +990,18 @@ document.getElementById('btn-confirm-modal').addEventListener('click', async () 
 
   const itemsToSend = [...cart];
   const failed = [];
+  const assignedOrderNumbers = [];
 
   try{
     for (const it of itemsToSend){
       const payload = {
-        name: it.name,
-        group: it.group,
+        name,
+        group,
+        menu: it.menuName,
         type: it.type,
         extras: it.extras,
         note: it.note,
-        detail: it.qty > 1 ? `${it.detail} × ${it.qty}` : it.detail,
+        detail: it.qty > 1 ? `${it.menuName} • ${it.detail} × ${it.qty}` : `${it.menuName} • ${it.detail}`,
         price: it.subtotal
       };
       try{
@@ -726,7 +1011,14 @@ document.getElementById('btn-confirm-modal').addEventListener('click', async () 
           body: JSON.stringify(payload)
         });
         const result = await res.json();
-        if (!result || !result.success) failed.push(it);
+        if (result && result.success) {
+          // ของจริง: เลขออเดอร์ต้องมาจาก backend (result.orderNo) กันเลขชนกันเวลามีคนสั่งพร้อมกันหลายคน
+          // ตอนนี้ backend ยังไม่ส่งค่านี้กลับมา เลยใช้เลขรันในเครื่อง (localOrderNoFallback) แทนไปพลางๆ สำหรับพรีวิว
+          const orderNo = (result.orderNo != null) ? result.orderNo : localOrderNoFallback++;
+          assignedOrderNumbers.push(orderNo);
+        } else {
+          failed.push(it);
+        }
       }catch(e){
         failed.push(it);
       }
@@ -735,27 +1027,27 @@ document.getElementById('btn-confirm-modal').addEventListener('click', async () 
     closeConfirmModal();
 
     if (failed.length === 0) {
-      const names = [...new Set(itemsToSend.map(it => it.name))];
-      const summary = names.length === 1
-        ? `เราได้รับออเดอร์ของ ${names[0]} เรียบร้อยแล้ว (${itemsToSend.length} รายการ)`
-        : `เราได้รับออเดอร์เรียบร้อยแล้ว ${itemsToSend.length} รายการ (${names.join(', ')})`;
+      lastOrderer = { name, group };
+      renderOrderNoBadges(assignedOrderNumbers);
+      const summary = `เราได้รับออเดอร์ของ ${name} เรียบร้อยแล้ว (${itemsToSend.length} รายการ)`;
 
       setTimeout(() => openSuccessModal(summary), 350);
 
       cart = [];
       renderCart();
-      document.getElementById('f-name').value = '';
       resetFormAfterAdd();
       loadOrders();
     } else {
       // เก็บเฉพาะรายการที่ส่งไม่สำเร็จไว้ในตะกร้า ให้ลองใหม่ได้
       cart = failed;
       renderCart();
+      const statusEl = document.getElementById('f-status');
       statusEl.style.color = 'var(--danger)';
       statusEl.textContent = `ส่งไม่สำเร็จ ${failed.length} รายการ กรุณาลองกดยืนยันอีกครั้ง`;
     }
   }catch(e){
     closeConfirmModal();
+    const statusEl = document.getElementById('f-status');
     statusEl.style.color = 'var(--danger)';
     statusEl.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
   }finally{
@@ -764,6 +1056,11 @@ document.getElementById('btn-confirm-modal').addEventListener('click', async () 
     cancelBtn.style.pointerEvents = 'auto';
   }
 });
+
+function renderOrderNoBadges(orderNumbers){
+  const el = document.getElementById('order-no-badges');
+  el.innerHTML = orderNumbers.map(n => `<span class="order-no-badge">#${String(n).padStart(3,'0')}</span>`).join('');
+}
 
 document.getElementById('refresh-btn').addEventListener('click', loadOrders);
 
