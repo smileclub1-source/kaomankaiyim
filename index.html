@@ -363,6 +363,8 @@ function imgFallback(img){
     display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;
   }
   .floating-cart-bar .fcb-total { font-weight: 700; font-size: 16px; }
+  .no-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .no-list .order-no-tag { font-size: 15px; padding: 6px 12px; margin: 0; }
 </style>
 </head>
 <body>
@@ -441,32 +443,23 @@ function imgFallback(img){
     <button class="submit-btn" id="cart-checkout-btn" style="margin-top:16px; display:none;">ยืนยันออเดอร์ทั้งหมด</button>
   </div>
 
-  <div class="divider">รายการออเดอร์วันนี้</div>
+
+  <div class="divider">หมายเลขออเดอร์วันนี้</div>
 
   <div class="group-section">
     <div class="group-head">
-      <h2>Office Orders</h2>
-      <div class="group-meta">
-        <span class="count-badge" id="office-count">0</span>
-        <span class="sum-badge" id="office-sum">฿0</span>
-      </div>
+      <h2>Office</h2>
+      <div class="group-meta"><span class="count-badge" id="office-count">0 รายการ</span></div>
     </div>
-    <div class="order-list" id="office-list">
-      <div class="empty-state">ยังไม่มีรายการสั่งซื้อจาก Office</div>
-    </div>
+    <div class="no-list" id="office-list"><div class="empty-state">ยังไม่มีออเดอร์</div></div>
   </div>
 
   <div class="group-section">
     <div class="group-head">
-      <h2>Factory Orders</h2>
-      <div class="group-meta">
-        <span class="count-badge" id="factory-count">0</span>
-        <span class="sum-badge" id="factory-sum">฿0</span>
-      </div>
+      <h2>Factory</h2>
+      <div class="group-meta"><span class="count-badge" id="factory-count">0 รายการ</span></div>
     </div>
-    <div class="order-list" id="factory-list">
-      <div class="empty-state">ยังไม่มีรายการสั่งซื้อจากโรงงาน</div>
-    </div>
+    <div class="no-list" id="factory-list"><div class="empty-state">ยังไม่มีออเดอร์</div></div>
   </div>
 
   <button class="refresh-btn" id="refresh-btn">รีเฟรชข้อมูลล่าสุด</button>
@@ -745,59 +738,21 @@ function escapeHtml(str){
   return d.innerHTML;
 }
 
-function renderList(listEl, countEl, sumEl, orders, emptyText){
-  countEl.textContent = orders.length + ' รายการ';
-  const sum = orders.reduce((acc, o) => acc + (parseFloat(o.price) || 0), 0);
-  sumEl.textContent = `฿${sum}`;
-  if (orders.length === 0) {
-    listEl.innerHTML = `<div class="empty-state">${emptyText}</div>`;
-    return;
-  }
-  listEl.innerHTML = orders.map(o => `
-    <div class="order-card">
-      <div class="order-main">
-        <p class="order-name">${o.orderNo != null ? `<span class="order-no-tag">#${String(o.orderNo).padStart(3,'0')}</span>` : ''}${escapeHtml(o.name)}</p>
-        <p class="order-detail">${escapeHtml(o.detail || 'ธรรมดา')} — ฿${escapeHtml(o.price)}</p>
-        <p class="order-time">${formatTime(o.createdAt)}</p>
-      </div>
-      <button class="del-btn" data-id="${escapeHtml(o.id)}" data-group="${escapeHtml(o.__group)}" title="ลบออเดอร์">&times;</button>
-    </div>`).join('');
-  listEl.querySelectorAll('.del-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      try{
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'delete', id: btn.dataset.id, group: btn.dataset.group })
-        });
-        loadOrders();
-      }catch(e){}
-    });
-  });
+function renderNoList(listEl, countEl, nos){
+  countEl.textContent = nos.length + ' รายการ';
+  if (!nos.length) { listEl.innerHTML = '<div class="empty-state" style="width:100%">ยังไม่มีออเดอร์</div>'; return; }
+  listEl.innerHTML = nos.map(n => `<span class="order-no-tag">#${String(n).padStart(3,'0')}</span>`).join('');
 }
 
+// แสดงเฉพาะหมายเลขออเดอร์ (ไม่มีชื่อ/รายละเอียด/ราคา)
 async function loadOrders(){
   if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') === 0) return;
   try{
-    const res = await fetch(SCRIPT_URL, { method: 'GET' });
+    const res = await fetch(SCRIPT_URL + '?action=orders');
     const data = await res.json();
-    const office = (data.office || []).map(o => ({ ...o, __group: 'Office' }));
-    const factory = (data.factory || []).map(o => ({ ...o, __group: 'โรงงาน' }));
-    renderList(
-      document.getElementById('office-list'),
-      document.getElementById('office-count'),
-      document.getElementById('office-sum'),
-      office, 'ยังไม่มีรายการสั่งซื้อจาก Office'
-    );
-    renderList(
-      document.getElementById('factory-list'),
-      document.getElementById('factory-count'),
-      document.getElementById('factory-sum'),
-      factory, 'ยังไม่มีรายการสั่งซื้อจากโรงงาน'
-    );
-  }catch(e){
-    document.getElementById('office-list').innerHTML = '<div class="empty-state" style="color:var(--danger)">ไม่สามารถโหลดข้อมูลได้</div>';
-  }
+    renderNoList(document.getElementById('office-list'), document.getElementById('office-count'), data.office || []);
+    renderNoList(document.getElementById('factory-list'), document.getElementById('factory-count'), data.factory || []);
+  }catch(e){}
 }
 
 // ==== Modal Logic ====
@@ -1044,6 +999,7 @@ document.getElementById('btn-confirm-modal').addEventListener('click', async () 
       const statusEl = document.getElementById('f-status');
       statusEl.style.color = 'var(--danger)';
       statusEl.textContent = `ส่งไม่สำเร็จ ${failed.length} รายการ กรุณาลองกดยืนยันอีกครั้ง`;
+      alert(`ส่งไม่สำเร็จ ${failed.length} รายการ กรุณาลองกดยืนยันอีกครั้ง`);
     }
   }catch(e){
     closeConfirmModal();
@@ -1067,6 +1023,7 @@ document.getElementById('refresh-btn').addEventListener('click', loadOrders);
 updatePriceTag();
 renderCart();
 loadOrders();
+setInterval(loadOrders, 60000);
 </script>
 </body>
 </html>
